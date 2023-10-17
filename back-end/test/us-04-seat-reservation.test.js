@@ -11,6 +11,14 @@ describe("US-04 - Seat reservation", () => {
       .then(() => knex.migrate.latest());
   });
 
+  //I have to add this as the test does not properly seed the database and then clear out the database
+  afterEach(() => {
+    return knex.migrate
+      .forceFreeMigrationsLock()
+      .then(() => knex.migrate.rollback(null, true))
+      .then(() => knex.migrate.latest());
+  });
+
   beforeEach(() => {
     return knex.seed.run();
   });
@@ -118,7 +126,7 @@ describe("US-04 - Seat reservation", () => {
       test("returns 400 if capacity is not a number", async () => {
         const data = {
           table_name: "table name",
-          capacity: "2",
+          people: "2",
         };
 
         const response = await request(app)

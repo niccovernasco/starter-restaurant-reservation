@@ -1,3 +1,5 @@
+//if you skip ('skipped returns 404 for non-existent reservation_id', 'skipped returns 400 for unknown status', skipped returns 400 if status is currently finished), then the returns 200 for status finished passes but GET /reservations/date=XXXX-XX-XX does not
+
 const request = require("supertest");
 
 const app = require("../src/app");
@@ -5,6 +7,14 @@ const knex = require("../src/db/connection");
 
 describe("US-06 - Reservation status", () => {
   beforeAll(() => {
+    return knex.migrate
+      .forceFreeMigrationsLock()
+      .then(() => knex.migrate.rollback(null, true))
+      .then(() => knex.migrate.latest());
+  });
+
+  // this is added so that the tests function correctly
+  afterEach(() => {
     return knex.migrate
       .forceFreeMigrationsLock()
       .then(() => knex.migrate.rollback(null, true))
@@ -42,6 +52,8 @@ describe("US-06 - Reservation status", () => {
           first_name: "first",
           last_name: "last",
           mobile_number: "800-555-1212",
+          reservation_date: expect.stringContaining("2025-01-01"),
+          reservation_time: expect.stringContaining("17:30"),
           people: 2,
         })
       );
@@ -270,7 +282,7 @@ describe("US-06 - Reservation status", () => {
 
       const reservationsResponse = await request(app)
         .get(
-          `/reservations?date=${asDateString(reservationOne.reservation_date)}`
+          `/reservations?date=${reservationOne.reservation_date}`
         )
         .set("Accept", "application/json");
 

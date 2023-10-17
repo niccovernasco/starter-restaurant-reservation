@@ -11,12 +11,20 @@ describe("US-01 - Create and list reservations", () => {
       .then(() => knex.migrate.latest());
   });
 
+  //this had to be added in because lines 26-28 does not do anything
+  afterEach(() => {
+    return knex.migrate
+      .forceFreeMigrationsLock()
+      .then(() => knex.migrate.rollback(null, true))
+      .then(() => knex.migrate.latest());
+  });
+
   beforeEach(() => {
     return knex.seed.run();
   });
 
   afterAll(async () => {
-    return await knex.migrate.rollback(null, true).then(() => knex.destroy());
+   return await knex.migrate.rollback(null, true).then(() => knex.destroy());
   });
 
   describe("App", () => {
@@ -354,6 +362,8 @@ describe("US-01 - Create and list reservations", () => {
           first_name: "first",
           last_name: "last",
           mobile_number: "800-555-1212",
+          reservation_date: expect.stringContaining("2025-01-01"),
+          reservation_time: expect.stringContaining("17:30"),
           people: 2,
         })
       );
@@ -375,7 +385,7 @@ describe("US-01 - Create and list reservations", () => {
       const response = await request(app)
         .get("/reservations?date=2020-12-30")
         .set("Accept", "application/json");
-
+      
       expect(response.body.data).toHaveLength(2);
       expect(response.body.data[0].first_name).toBe("Bird");
       expect(response.body.data[1].first_name).toBe("Frank");
