@@ -35,9 +35,10 @@ export default function Dashboard() {
     listTables(abortController.signal)
       .then(setTables)
       .catch(setTablesError);
+      console.log("Tables", tables)
     return () => abortController.abort();
   };
-
+  console.log("Tables", tables)
   const loadBoth = () => {
     const controller = new AbortController();
     loadReservations();
