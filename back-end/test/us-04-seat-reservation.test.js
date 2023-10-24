@@ -142,6 +142,7 @@ describe("US-04 - Seat reservation", () => {
         const data = {
           table_name: "table-name",
           capacity: 1,
+          status: "occupied",
         };
 
         const response = await request(app)
