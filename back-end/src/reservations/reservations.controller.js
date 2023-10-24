@@ -83,7 +83,6 @@ function hasValidTime(req, res, next) {
   const { data = {} } = req.body;
   const time = data["reservation_time"];
 
-  console.log(time);
   if (!isValidMilitaryTime(time)) {
     next({
       status: 400,
@@ -198,9 +197,28 @@ async function update(req, res) {
   res.status(200).json({ data });
 }
 
-async function create(req, res) {
-  const data = await reservationService.create(req.body.data);
-  res.status(201).json({ data });
+async function create(req, res, next) {
+  const { data = {} } = req.body;
+
+  // Extract the mobile_number from the reservation data
+  const mobileNumber = data.mobile_number;
+
+  // Use a regular expression to check if the mobile_number contains only numeric characters
+  if (!/^[0-9]+$/.test(mobileNumber)) {
+    return res.status(400).json({ error: 'Mobile number must contain only numeric characters.' });
+  }
+
+  // Rest of your create function logic here...
+
+  // If the mobile number is valid, proceed with creating the reservation
+  reservationService
+    .create(data)
+    .then((createdReservation) => {
+      res.status(201).json({ data: createdReservation });
+    })
+    .catch((error) => {
+      next(error);
+    });
 }
 
 async function updateStatus(req, res) {
