@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
-import { listTables, updateTable, readReservation } from "../utils/api";
+import {
+  useParams,
+  useHistory,
+} from "react-router-dom/cjs/react-router-dom.min.js";
+import { listTables, updateTable, readReservation } from "../utils/api.js";
 
-export const ReservationSeat = () => {
+export default function ReservationSeat() {
   const { reservation_id } = useParams();
   const [tables, setTables] = useState([]);
   const [tableId, setTableId] = useState("");
@@ -14,7 +17,9 @@ export const ReservationSeat = () => {
   }, []);
 
   useEffect(() => {
-    readReservation(reservation_id).then(setReservation);
+    if (reservation_id) {
+      readReservation(reservation_id).then(setReservation);
+    }
   }, [reservation_id]);
 
   const changeHandler = (event) => {
@@ -25,8 +30,14 @@ export const ReservationSeat = () => {
     event.preventDefault();
     event.stopPropagation();
 
-    await updateTable(reservation.reservation_id, tableId);
-    history.push("/dashboard");
+    const abortController = new AbortController();
+
+    if ((reservation_id, tableId)) {
+      await updateTable(reservation_id, tableId, abortController.signal);
+      history.push("/dashboard");
+    }
+
+    return () => abortController.abort();
   };
 
   return (
@@ -43,35 +54,32 @@ export const ReservationSeat = () => {
               onChange={changeHandler}
             >
               <option value="">- Select a table -</option>
-              {tables.map((table) => (
-                <option
-                  key={table.table_id}
-                  value={table.table_id}
-                  disabled={
-                    table.capacity < reservation.people || table.occupied
-                  }
-                >
-                  {table.table_name} - {table.capacity}
-                </option>
-              ))}
+              {tables &&
+                tables.map((table) => (
+                  <option
+                    key={table.table_id}
+                    value={table.table_id}
+                    disabled={
+                      table.capacity < reservation.people || table.occupied
+                    }
+                  >
+                    {table.table_name} - {table.capacity}
+                  </option>
+                ))}
             </select>
           </div>
           <div className="group-row">
             <button
-              className="black"
+              className="white"
               type="button"
               onClick={() => history.goBack()}
             >
               Cancel
             </button>
-            <button className="yellow" type="submit">
-              Submit
-            </button>
+            <button className="btn btn-success">Submit</button>
           </div>
         </fieldset>
       </form>
     </section>
   );
-};
-
-export default ReservationSeat;
+}

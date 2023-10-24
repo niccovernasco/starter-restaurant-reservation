@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import { createTable } from "../utils/api";
 import TableErrors from "./TableErrors";
 
-export const TableNew = () => {
+export default function TableNew() {
   const initialTableState = {
     table_name: "",
     capacity: 0,
@@ -72,10 +72,13 @@ export const TableNew = () => {
             />
           </div>
           <div className="group-row">
-            <button className="red" onClick={() => history.goBack()}>
+            <button
+              className="btn btn-danger black"
+              onClick={() => history.goBack()}
+            >
               Cancel
             </button>
-            <button className="black" type="submit">
+            <button className="btn btn-success mx-3" type="submit">
               Submit
             </button>
           </div>
@@ -83,6 +86,4 @@ export const TableNew = () => {
       </form>
     </section>
   );
-};
-
-export default TableNew;
+}

@@ -5,7 +5,7 @@ import ReservationErrors from "./ReservationErrors";
 import ReservationForm from "./ReservationForm";
 import { hasValidDateAndTime } from "./ReservationValidate";
 
-export const ReservationEdit = () => {
+export default function ReservationEdit() {
   const initialReservationState = {
     first_name: "",
     last_name: "",
@@ -59,6 +59,7 @@ export const ReservationEdit = () => {
       await updateReservation(reservation, abortController.signal);
       history.push(`/dashboard?date=${reservation.reservation_date}`);
     } catch (error) {
+      console.log(error);
       setReservationErrors([error]);
     }
 
@@ -67,7 +68,9 @@ export const ReservationEdit = () => {
 
   return (
     <section>
-      <h2>Edit Reservation:</h2>
+      <h2>
+        <span className="oi oi-pencil"></span> Edit Reservation:
+      </h2>
       <ReservationErrors errors={reservationErrors} />
       <ReservationForm
         reservation={reservation}
@@ -76,6 +79,4 @@ export const ReservationEdit = () => {
       />
     </section>
   );
-};
-
-export default ReservationEdit;
+}

@@ -1,61 +1,83 @@
 import React, { useState } from "react";
-import { listReservations } from "../utils/api";
-import ErrorAlert from "../layout/ErrorAlert";
-import Reservation from "../Reservations/Reservations";
-
-const formatNumber = mobile_phone => {
-  mobile_phone = mobile_phone.toString();
-  const areaCode = mobile_phone.slice(0,3);
-  const firstPortion = mobile_phone.slice(3,6);
-  const secondPortion = mobile_phone.slice(6,10);
-  return areaCode + "-" + firstPortion + "-" + secondPortion;
-};
+import { listReservations, updateStatus } from "../utils/api";
+import ReservationsList from "../reservation/ReservationsList";
 
 export default function Search() {
+  const [reservations, setReservations] = useState([]);
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const filterResults = false;
 
-    const [ mobile_phone, setMobile_phone ] = useState("")
-    const [ data, setData ] = useState([]);
-    const [ searchError, setSearchError ] = useState(null);
-    const [ buttonDisable, setButtonDisable ] = useState(false);
+  const changeHandler = (event) => {
+    setMobileNumber(event.target.value);
+  };
 
-    const findHandler = event => {
-        event.preventDefault();
-        if(mobile_phone !== ""){
-        const controller = new AbortController()
-        setButtonDisable(state => !state)
-        const mobile_number = formatNumber(mobile_phone)
-        listReservations({ mobile_number }, controller.signal)
-        .then(setData)
-        .catch(setSearchError)
-        setButtonDisable(state => !state);}
+  const submitHandler = async (event) => {
+    event.preventDefault();
+    const abortController = new AbortController();
+
+    let res = await listReservations(
+      { mobile_number: mobileNumber },
+      abortController.signal
+    );
+    await setReservations(res);
+    setSubmitted(true);
+
+    return () => abortController.abort();
+  };
+
+  const cancelHandler = async (event) => {
+    const abortController = new AbortController();
+
+    const result = window.confirm(
+      "Do you want to cancel this reservation? This cannot be undone."
+    );
+
+    if (result) {
+      await updateStatus(event.target.value, "cancelled");
+      let res = await listReservations(
+        { mobile_number: mobileNumber },
+        abortController.signal
+      );
+      await setReservations(res);
+      setSubmitted(true);
     }
 
-  return (
-    <div>
-    <h1>Search</h1>
-      <ErrorAlert error={searchError} />
-      <form className="d-flex" onSubmit={findHandler}>
-        <div className="form-group mb-2 mr-1 col-6">
-          <input
-            type="number"
+    return () => abortController.abort();
+  };
 
-            className="form-control"
-            name="mobile_number"
-            id="mobile_number"
-            placeholder="Enter a customer's phone number"
-            value={mobile_phone}
-            onChange={event => setMobile_phone(event.target.value)}
-          />
-        </div>
-        <button
-          type="submit"
-          className="btn btn-info mb-2 ml-1"
-          disabled={buttonDisable}
-        >
-          Find
-        </button>
-      </form>
-      {data.length > 0 ? <Reservation reservations={data} /> : <h3>No reservations found</h3>}
-    </div>
+  return (
+    <section>
+      <h2>Search</h2>
+      <div>
+        <form onSubmit={submitHandler}>
+          <div>
+            <label htmlFor="mobile_number">Mobile Number:</label>
+            <input
+              id="mobile_number"
+              name="mobile_number"
+              type="text"
+              required={true}
+              placeholder="Enter a customer's phone number"
+              value={mobileNumber}
+              maxLength="12"
+              onChange={changeHandler}
+            />
+          </div>
+          <button type="submit" className="black">
+            Find
+          </button>
+        </form>
+      </div>
+      {submitted ? (
+        <ReservationsList
+          reservations={reservations}
+          filterResults={filterResults}
+          cancelHandler={cancelHandler}
+        />
+      ) : (
+        ""
+      )}
+    </section>
   );
-};
+}

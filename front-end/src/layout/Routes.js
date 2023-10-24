@@ -1,13 +1,15 @@
 import React from "react";
+
 import { Redirect, Route, Switch } from "react-router-dom";
 import Dashboard from "../dashboard/Dashboard";
 import NotFound from "./NotFound";
-import NewReservation from "../Reservations/NewReservation";
-import NewTable from "../tables/NewTable"
-import Search from "../search/Search";
-import Edit from "../Edit/Edit";
-import Seat from "../Seat/Seat";
-
+import { today } from "../utils/date-time";
+import ReservationNew from "../reservation/ReservationNew.js";
+import Search from "../search/search.js";
+import useQuery from "../utils/useQuery.js";
+import ReservationEdit from "../reservation/ReservationEdit.js";
+import ReservationSeat from "../reservation/ReservationSeat.js";
+import TablesNew from "../tables/TablesNew.js";
 /**
  * Defines all the routes for the application.
  *
@@ -15,8 +17,10 @@ import Seat from "../Seat/Seat";
  *
  * @returns {JSX.Element}
  */
- //today()
-export default function Routes() {
+function Routes() {
+  const query = useQuery();
+  const date = query.get("date");
+
   return (
     <Switch>
       <Route exact={true} path="/">
@@ -25,30 +29,29 @@ export default function Routes() {
       <Route exact={true} path="/reservations">
         <Redirect to={"/dashboard"} />
       </Route>
-      <Route exact={true} path="/tables">
-      <Redirect to={"/dashboard"} />
-      </Route>
       <Route path="/dashboard">
-        <Dashboard />
+        <Dashboard date={date || today()} />
       </Route>
       <Route path="/reservations/new">
-        <NewReservation />
-      </Route>
-      <Route path="/tables/new">
-        <NewTable />
-      </Route>
-      <Route path="/search">
-          <Search />
-      </Route>
-      <Route path="/reservations/:reservation_id/edit">
-        <Edit />
+        <ReservationNew />
       </Route>
       <Route path="/reservations/:reservation_id/seat">
-        <Seat  />
+        <ReservationSeat />
+      </Route>
+      <Route path="/reservations/:reservation_id/edit">
+        <ReservationEdit />
+      </Route>
+      <Route path="/tables/new">
+        <TablesNew />
+      </Route>
+      <Route path="/search">
+        <Search />
       </Route>
       <Route>
         <NotFound />
       </Route>
     </Switch>
   );
-};
+}
+
+export default Routes;

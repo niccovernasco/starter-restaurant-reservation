@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export const ReservationsList = ({
+export default function ReservationsList({
   reservations,
   cancelHandler,
   filterResults,
-}) => {
+}) {
   // Filters out reservations that are finished or cancelled
   function checkStatus(reservation) {
     return (
@@ -35,7 +35,7 @@ export const ReservationsList = ({
           <div className="reservation" key={reservation.reservation_id}>
             <div className="group">
               <div className="item-quad">
-                <div className="group-col no-gap">
+                <div className="group-col">
                   <div>
                     <h4 className="inline">
                       {reservation.first_name} {reservation.last_name}{" "}
@@ -62,19 +62,21 @@ export const ReservationsList = ({
                 {reservation.status === "booked" ? (
                   <div className="group-reverse">
                     <Link
-                      className="item button-link"
+                      type="item button-link"
+                      className="btn btn-primary"
                       to={`/reservations/${reservation.reservation_id}/seat`}
                     >
                       Seat
                     </Link>
                     <Link
-                      className="item button-link"
+                      type="item button-link"
+                      className="btn btn-dark mx-2"
                       to={`/reservations/${reservation.reservation_id}/edit`}
                     >
-                      Edit
+                      <span className="oi oi-pencil"></span> Edit
                     </Link>
                     <button
-                      className="item black"
+                      className="btn btn-danger item black"
                       type="button"
                       data-reservation-id-cancel={reservation.reservation_id}
                       value={reservation.reservation_id}
@@ -101,6 +103,4 @@ export const ReservationsList = ({
   }
 
   return <div>{renderReservations(reservations)}</div>;
-};
-
-export default ReservationsList;
+}

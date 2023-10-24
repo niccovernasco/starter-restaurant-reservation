@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
-import { createReservation } from "../utils/api";
-import ReservationErrors from "./ReservationErrors";
-import ReservationForm from "./ReservationForm";
-import { hasValidDateAndTime } from "./ReservationValidate";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min.js";
+import ReservationForm from "./ReservationForm.js";
+import { createReservation } from "../utils/api.js";
+import { hasValidDateAndTime } from "./ReservationValidate.js";
+import ReservationErrors from "./ReservationErrors.js";
 
-export const ReservationNew = () => {
-  const initialReservationState = {
+export default function ReservationNew() {
+  let initalState = {
     first_name: "",
     last_name: "",
     mobile_number: "",
@@ -14,27 +14,24 @@ export const ReservationNew = () => {
     reservation_time: "",
     people: 0,
   };
-
-  const [reservation, setReservation] = useState({
-    ...initialReservationState,
-  });
   const [reservationErrors, setReservationErrors] = useState(null);
+  let [reservation, setReservation] = useState({
+    ...initalState,
+  });
   const history = useHistory();
-
-  const changeHandler = (event) => {
-    if (event.target.name === "people") {
+  const changeHandler = (e) => {
+    if (e.target.name === "people") {
       setReservation({
         ...reservation,
-        [event.target.name]: Number(event.target.value),
+        [e.target.name]: Number(e.target.value),
       });
     } else {
       setReservation({
         ...reservation,
-        [event.target.name]: event.target.value,
+        [e.target.name]: e.target.value,
       });
     }
   };
-
   const submitHandler = async (event) => {
     event.preventDefault();
     const abortController = new AbortController();
@@ -56,7 +53,7 @@ export const ReservationNew = () => {
 
   return (
     <section>
-      <h2>Create a Reservation:</h2>
+      To make a Reservation:
       <ReservationErrors errors={reservationErrors} />
       <ReservationForm
         reservation={reservation}
@@ -65,6 +62,4 @@ export const ReservationNew = () => {
       />
     </section>
   );
-};
-
-export default ReservationNew;
+}

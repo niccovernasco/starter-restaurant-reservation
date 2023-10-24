@@ -11,9 +11,9 @@ import "./Layout.css";
  *
  * @returns {JSX.Element}
  */
-export default function Layout() {
+function Layout() {
   return (
-    <div className="container-fluid height-full">
+    <div className="container-fluid">
       <div className="row h-100">
         <div className="col-md-2 side-bar">
           <Menu />
@@ -25,3 +25,5 @@ export default function Layout() {
     </div>
   );
 }
+
+export default Layout;

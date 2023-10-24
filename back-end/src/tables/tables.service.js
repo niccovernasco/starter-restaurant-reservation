@@ -1,80 +1,57 @@
-const knex = require('../db/connection');
+const knex = require("../db/connection.js");
 
-const readAll = (table_id) => {
-    return knex('tables as t')
-    .join('reservations as r', 't.reservation_id', 'r.reservation_id')
-    .where({table_id})
-} 
+function list() {
+  return knex("tables").select("*").orderBy("table_name");
+}
 
-//CRUDL
-const create = (newTable) => {
-    return knex('tables')
-    .insert(newTable, '*')
-    .then((createdTables) => createdTables[0]);
-};
+function read(table_id) {
+  return knex("tables").select("*").where({ table_id }).first();
+}
 
-const read = (table_id) => {
-    return knex('tables')
-    .select('*')
-    .where({table_id})
-    .first();
-};
+function finish(reservation_id, table_id) {
+  return knex.transaction(async (trx) => {
+    await knex("reservations")
+      .where({ reservation_id })
+      .update({ status: "finished" })
+      .transacting(trx);
 
-//issue #11
-const readRes = (reservation_id) => {
-    return knex('reservations')
-    .where({reservation_id})
-    .first();
-};
+    return knex("tables")
+      .select("*")
+      .where({ table_id })
+      .update({ reservation_id: null }, "*")
+      .transacting(trx)
+      .then((createdRecords) => createdRecords[0]);
+  });
+}
 
-//issue #11
-const readByCapacity = (capacity, table_id) => {
-    return knex('tables')
-    .where({capacity})
-    .where({table_id});
-};
+function update(reservation_id, table_id) {
+  return knex.transaction(async (trx) => {
+    await knex("reservations")
+      .where({ reservation_id })
+      .update({ status: "seated" })
+      .transacting(trx)
+      .then(() => {
+        return knex("tables")
+          .select("*")
+          .where({ table_id })
+          .update({ reservation_id: reservation_id }, "*")
+          .transacting(trx)
+          .then((createdRecords) => createdRecords[0]);
+      });
+  });
+}
 
-const update = async (updatedTable, updatedReservation) => {
-    const {table_id, reservation_id} = updatedTable;
-    await knex('tables')
-    .where({table_id})
-    .update(updatedTable, '*');
-
-    await knex('reservations')
-    .where({reservation_id})
-    .update(updatedReservation, '*')
-
-    return read(table_id)
-};
-
-//issue #7
-const destroy = async (openedTable, finishedReservation) => {
-    const {table_id} = openedTable;
-    const {reservation_id} = finishedReservation;
-    await knex('tables')
-    .where({table_id})
-    .update(openedTable, '*');
-
-    await knex('reservations')
-    .where({reservation_id})
-    .update(finishedReservation, '*');
-
-    return readAll(table_id);
-};
-
-//issue #9
-const list = () => {
-    return knex('tables')
-    .select('*')
-    .orderBy('table_name');
-};
+function create(table) {
+  return knex("tables")
+    .insert(table)
+    .returning("*")
+    .then((createdRecords) => createdRecords[0]);
+}
 
 module.exports = {
-    create,
-    read,
-    readRes,
-    readByCapacity,
-    update,
-    destroy,
-    list,
+  list,
+  read,
+  update,
+  finish,
+  create,
 };
